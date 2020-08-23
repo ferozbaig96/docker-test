@@ -11,7 +11,7 @@ $ sudo chown nfsnobody:nfsnobody -R /var/lib/docker/volumes/prometheus_data
 $ docker stack deploy --compose-file docker-compose.yml prometheus
 ```
 
-Browse <ip>:8082
+Browse ip:8082
 
 login - admin
 
