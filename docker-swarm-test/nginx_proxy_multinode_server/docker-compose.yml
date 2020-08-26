@@ -1,0 +1,22 @@
+version: "3"
+services:
+  web_proxy:
+    container_name: webserverproxy
+    image: nginx:latest
+    ports:
+        - "8090:80"
+    depends_on:
+      - webserver
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: always
+
+  webserver:
+    container_name: webserver
+    image: php:apache
+    deploy:
+      replicas: 4
+#      mode: global
+# This data MUST exist in each node. Can use NFS/AmazonS3/SSHfs etc
+    volumes:
+      - /var/www/html/:/var/www/html:ro
