@@ -1,0 +1,73 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.0
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+    #   - node.name=es01
+    #   - cluster.initial_master_nodes=es01
+    #   # - discovery.seed_hosts=es02,es03
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    ## OR
+    command: elasticsearch -Enode.name=es01 -Ecluster.initial_master_nodes=es01
+    # Docker in swarm mode will ignore ulimits, hence 
+    # use https://medium.com/@borisdering/elasticsearch-as-a-service-on-docker-swarm-max-file-descriptors-error-c99f34572084
+    # and then restart docker service
+    # ulimits:
+    #   memlock: -1
+    #   nofile:
+    #     hard: 65536
+    #     soft: 65536
+    #   nproc: 65538
+    volumes:
+      - vol_elasticsearch:/usr/share/elasticsearch/data
+    deploy:
+      mode: global
+    # Check using
+    # curl -X GET "localhost:9200"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.9.0
+    ports:
+      - 5044:5044
+      - 9600:9600
+    command: sh -c "logstash -e 'input {    beats {     port => 5044    } }   output {    elasticsearch {     hosts => [\"http://elasticsearch:9200\"]      index => \"%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}\"    } }'"
+    ## OR
+    # volumes:
+    #   - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.0
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    deploy:
+      mode: replicated
+      replicas: 2
+    # Checking using 
+    # curl -v localhost:5601
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.9.0
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      # - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+    ## OR
+    command: filebeat -e -E output.logstash.hosts=["logstash:5044"] -E output.logstash.enabled=true -E output.elasticsearch.enabled=false -E filebeat.inputs=[{type:log,paths:['/var/lib/docker/containers/*/*.log']}]
+    depends_on:
+      - logstash
+
+volumes:
+  vol_elasticsearch: {}
