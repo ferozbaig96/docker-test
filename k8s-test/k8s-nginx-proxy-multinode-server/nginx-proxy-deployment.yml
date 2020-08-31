@@ -1,0 +1,29 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx-proxy-deployment
+  labels:
+    app: nginx-proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+    spec:
+      volumes:
+        - name: nginx-conf-volume
+          hostPath:
+# This data MUST exist in each WORKER node. Can use NFS/AmazonS3/SSHfs etc
+            path: /home/ec2-user/docker-test/k8s-test/k8s-nginx-proxy-multinode-server/proxy/nginx.conf
+      containers:
+      - name: webserverproxy
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: nginx-conf-volume
+            mountPath: /etc/nginx/conf.d/default.conf

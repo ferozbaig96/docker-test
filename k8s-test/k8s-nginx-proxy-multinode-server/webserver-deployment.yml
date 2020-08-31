@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: php-apache-webserver-deployment
+  labels:
+    app: webserver-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      volumes:
+        - name: www-volume
+          hostPath:
+# This data MUST exist in each WORKER node. Can use NFS/AmazonS3/SSHfs etc
+            path: /home/ec2-user/docker-test/k8s-test/k8s-nginx-proxy-multinode-server/www
+      containers:
+      - name: webserver
+        image: php:apache
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: www-volume
+            mountPath: /var/www/html
+
