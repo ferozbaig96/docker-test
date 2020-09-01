@@ -28,7 +28,7 @@ Data will be fetched from node's (worker node) pv built from "/mnt/data" directo
 Delete sequence: pod, pvc, pv
 
 ```
-kubectl -n static-vol-namespace apply -f k8s-pv-pvc-pod.yml
+kubectl -n static-vol-namespace delete -f k8s-pv-pvc-pod.yml
 ```
 
 OR
