@@ -5,10 +5,11 @@ Check out different examples in the above link e.g. block-volume, resizing etc
 
 ## Prerequisites
 
-1. Kubernetes 1.13+ (CSI 1.0).
+Docker and Kubernetes must be installed.
 
 1. The [aws-ebs-csi-driver driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver) is installed.
 2. Make sure worker nodes has [relevant permissions](https://aws.amazon.com/premiumsupport/knowledge-center/eks-persistent-storage/)
+Quick setup: https://aws.amazon.com/premiumsupport/knowledge-center/eks-persistent-storage/
 
 ## Usage
 
